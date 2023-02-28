@@ -30,5 +30,5 @@ public interface TaskGroup {
      * taskGroupId是任务组唯一标识
      * @return 任务组id
      */
-    String getTasGroupkId();
+    String getTaskGroupId();
 }
