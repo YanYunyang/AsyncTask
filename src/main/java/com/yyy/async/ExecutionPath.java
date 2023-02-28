@@ -10,7 +10,7 @@ package com.yyy.async;
  * @author Yan Yunyang
  * @date 2023/2/28 11:17
  */
-public interface ExecutionPath<S,T> {
+public interface ExecutionPath {
 
     /**
      * 设置依赖路径是否为强制依赖
@@ -22,10 +22,10 @@ public interface ExecutionPath<S,T> {
      */
     boolean getMust();
 
-    void setSource(Task<S> task);
-    Task<S> getSource();
+    void setSource(Task<?> task);
+    Task<?> getSource();
 
-    void setTarget(Task<T> task);
+    void setTarget(Task<?> task);
 
-    Task<T> getTarget();
+    Task<?> getTarget();
 }
