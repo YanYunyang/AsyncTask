@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService;
  * @author Yan Yunyang
  * @date 2023/2/28 11:33
  */
-public interface TaskGroup {
+public interface TaskGroup extends Visitable{
 
     /**
      * 按照任务编排执行自定义任务

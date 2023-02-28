@@ -41,9 +41,8 @@ public interface Task<T> extends Visitable {
 
     /**
      * 查询后续执行路径
-     * @param executionPath 执行路径
      */
-    List<ExecutionPath> getAfterPath(ExecutionPath executionPath);
+    List<ExecutionPath> getAfterPath();
 
     /**
      * 查询任务前置的强依赖执行路径数量

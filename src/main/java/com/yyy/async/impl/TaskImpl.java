@@ -29,7 +29,7 @@ public class TaskImpl<T> implements Task<T> {
 
     @Override
     public String accept(Visitor visitor) {
-        return null;
+        return visitor.visitOnEntry(this) + visitor.visitOnExit(this);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class TaskImpl<T> implements Task<T> {
     }
 
     @Override
-    public List<ExecutionPath> getAfterPath(ExecutionPath executionPath) {
+    public List<ExecutionPath> getAfterPath() {
         return null;
     }
 
@@ -64,6 +64,6 @@ public class TaskImpl<T> implements Task<T> {
 
     @Override
     public boolean isStartOrEnd() {
-        return false;
+        return ((executionUnit instanceof Start)||(executionUnit instanceof End));
     }
 }
