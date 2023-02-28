@@ -54,7 +54,7 @@ public interface Task<T> extends Visitable {
      * 查询task封装的执行单元
      * @return ExecutionUnit
      */
-    ExecutionUnit<?> getExecutionUnit();
+    ExecutionUnit<T> getExecutionUnit();
 
     /**
      * 判断当前任务是否为内置任务（Start，End）

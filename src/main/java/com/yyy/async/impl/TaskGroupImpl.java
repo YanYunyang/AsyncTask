@@ -1,14 +1,11 @@
 package com.yyy.async.impl;
 
-import com.yyy.async.Task;
-import com.yyy.async.TaskGroup;
-import com.yyy.async.TaskGroupContext;
-import com.yyy.async.Visitor;
+import com.yyy.async.*;
 import com.yyy.async.exception.AsyncTaskException;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 /**
  * TaskGroupImpl
@@ -31,7 +28,50 @@ public class TaskGroupImpl implements TaskGroup {
 
     @Override
     public boolean work(TaskGroupContext context, ExecutorService executorService, long timeout) throws ExecutionException, InterruptedException {
-        return false;
+        if (context == null){
+            throw  new AsyncTaskException("param [context] should not be null");
+        }
+        isReady();
+
+        //封装任务组中所有任务
+        Map<String, TaskWrapper<?>> allTaskWrappers = wrapAllTask(taskMap);
+        putWorkResult(context,allTaskWrappers);
+
+        TaskWrapper<?> startTaskWrapper = allTaskWrappers.get(Start.class.getName());
+        Task<?> startTask = startTaskWrapper.getTask();
+        //起始任务，调试开启控制台打印启动信息
+        startTask.work(context);
+
+        CompletableFuture<?>[] futures = new CompletableFuture[startTask.getAfterPath().size()];
+        for (int i = 0; i < startTask.getAfterPath().size(); i++){
+            ExecutionPath executionPath = startTask.getAfterPath().get(i);
+            TaskWrapper<?> nextTaskWrapper = allTaskWrappers.get(executionPath.getTarget().getTaskId());
+            futures[i] = CompletableFuture.runAsync(()->nextTaskWrapper.work(context,executorService,timeout,allTaskWrappers,executionPath),executorService);
+        }
+        try {
+            CompletableFuture.allOf(futures).get(timeout, TimeUnit.MILLISECONDS);
+            return true;
+        } catch (TimeoutException e) {
+            //停止所有任务执行
+            for (TaskWrapper<?> taskWrapper : allTaskWrappers.values()){
+                taskWrapper.stopWork();
+            }
+            return false;
+        }
+    }
+
+    private void putWorkResult(TaskGroupContext context, Map<String, TaskWrapper<?>> allTaskWrappers) {
+        for (TaskWrapper<?> taskWrapper : allTaskWrappers.values()){
+            context.put(taskWrapper.getTask().getTaskId(),taskWrapper.getWorkResult());
+        }
+    }
+
+    private Map<String, TaskWrapper<?>> wrapAllTask(Map<String, Task<?>> taskMap) {
+        Map<String, TaskWrapper<?>> allTaskWrappers = new HashMap<>();
+        for (Task<?> task : taskMap.values()){
+            allTaskWrappers.put(task.getTaskId(),new TaskWrapper<>(task));
+        }
+        return allTaskWrappers;
     }
 
     @Override
